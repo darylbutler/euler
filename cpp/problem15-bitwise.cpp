@@ -45,7 +45,7 @@
  *  - Quick check function added to isValidPath to prevent following the path
  *  out when we can tell by bit value count can quickly tell us no.
  *
- * Revision 3:  Fixed major bug.  When I shifted 1 << x, 1 is still an int since
+ * Revision 3:  Fixed minor bug.  When I shifted 1 << x, 1 is still an int since
  *  I had not cast it to a lint, resulting in buffer overflows when X got > 31.
  *  I. Am. An. Idiot...
  *
@@ -105,9 +105,29 @@ public:
     vector<path_t> GetAllPaths();
 };
 
+int test() 
+{
+    lint x = 1;
+    x <<= 40;
+    vector<lint> v1;
+    vector<lint> v2;
+
+    for (; x != 0; --x) {
+        if (x % 2 == 0) {
+            v1.push_back(x);
+        } else {
+            v2.push_back(x);
+        }
+    }
+
+    return 0;
+}
+
 // -- Main()!
 int main()
 {
+    return test();
+
     lint x = (lint)1 << (WIDTH + LENGTH - 3);
 
     PathSolver* solver = new PathSolver();
@@ -184,6 +204,7 @@ vector<path_t> PathSolver::GetAllPaths()
     //lastPathFlipped.flip();     // Has to be flipped or it will fail at start of do{}
 
     do {
+        cout << found << endl;
         // If this path is equal to the opposite of the last path we evaluated,
         // we've reached the middle of the grid and have found all paths
         //if (lastPathFlipped == path)
