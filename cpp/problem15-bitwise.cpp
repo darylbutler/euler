@@ -83,7 +83,8 @@ typedef bitset<GBITS> grid_t;
 typedef bitset<PBITS> path_t;
 
 // vector overflow?
-static lint found = 0;
+static lint Max   = static_cast<lint>(1) << (WIDTH + LENGTH - 3);
+static lint Found = 0;
 
 // -- Class Definition (Using class to prevent static globals.  It is cleaner)
 class PathSolver
@@ -126,7 +127,7 @@ int test()
 // -- Main()!
 int main()
 {
-    return test();
+    //return test();
 
     lint x = (lint)1 << (WIDTH + LENGTH - 3);
 
@@ -142,12 +143,18 @@ int main()
     // Solver tests
     auto v = solver->GetAllPaths();
     cout << WIDTH << 'x' << LENGTH << " grid, 2^" << (WIDTH + LENGTH - 3) << " (" <<  x  << ") possible paths.  ";
-    //cout << v.size() << " of them are valid." << endl;
-    cout << found << " of them are valid." << endl;
+    cout << v.size() * 2 << " of them are valid." << endl;
+    cout << "Found:: " << Found << " of them are valid." << endl;
 
-    //cout << "They are: " << endl;
-    //for (auto iter = v.begin(); iter != v.end(); iter++)
-        //cout << *iter << endl;
+    /*
+    cout << "They are: " << endl;
+    for (auto iter = v.begin(); iter != v.end(); iter++) {
+        path_t path = *iter;
+        cout << path << '\t';
+        path.flip();
+        cout << path << endl;
+    }
+    */
 }
 
 // Constructor
@@ -163,7 +170,6 @@ PathSolver::PathSolver()
 // Private Methods - Does this path result in grid == 1?  (See intro comments)
 bool PathSolver::isValidPath(const path_t &path)
 {
-    //return false;
     // Revision 2:  Quick ruling out of paths by counting bits
     if (path.count() != (WIDTH - 1))
         return false;
@@ -192,40 +198,64 @@ vector<path_t> PathSolver::GetAllPaths()
     // Try every combination of paths possible, checking each one with
     // isValidPath.  If it is, it is added to the return vector.
     vector<path_t> v;   // TODO Can we estimate the size needed here?
-    path_t path;
-    //path_t path, lastPathFlipped;
+    v.reserve(Max);
+    //path_t path;
+    path_t path, lastPathFlipped;
+
+    // Revision 3: Count time we loop, error once we've looped more than Max
+    lint loopCnt = 0;
 
     // Set path to its maximum value
     // Revision 2: Max value has # of 1's == to GridWidth and similar with 0's
     path.set();
     //for (int i = 0; i < (LENGTH - 1); i++)
         //path.reset(i);
-    //lastPathFlipped = path;     // Assgin a sane starting value
-    //lastPathFlipped.flip();     // Has to be flipped or it will fail at start of do{}
+    lastPathFlipped = path;     // Assgin a sane starting value
+    lastPathFlipped.flip();     // Has to be flipped or it will fail at start of do{}
 
     do {
-        cout << found << endl;
         // If this path is equal to the opposite of the last path we evaluated,
         // we've reached the middle of the grid and have found all paths
-        //if (lastPathFlipped == path)
-            //return v;
+        if (lastPathFlipped == path)
+            return v;
 
         if (isValidPath(path)) {
             // Path was valid, add it to the return vector
-            //v.push_back(path);
+
+            /*
+            try {
+                v.push_back(path);
+            } catch (...) {
+                cout << "std::bad_alloc!" << endl;
+                cout << "v.size()  == " << v.size() << endl;
+                cout << "found     == " << Found << endl;
+                cout << "path      == " << path << endl;
+                cout << "sizeof(v) == " << sizeof(v) << endl;
+                throw;
+            }
+            */
+
             // Also add its opposite
             //path.flip();
             //v.push_back(path);
             // reset path so iteration can continue
             //path.flip();
-            //found += 2;
-            found += 1;
+            Found += 2;
+            //Found += 1;
         }
 
         // Subtract one and loop again
-        //lastPathFlipped = path;
-        //lastPathFlipped.flip();
+        lastPathFlipped = path;
+        lastPathFlipped.flip();
         bitsetMinusOne(path);
+
+
+        // Revision 3: Checking loopCnt for more than max
+        loopCnt++;
+        if (loopCnt > Max) {
+            throw "loopCnt > Max!";
+            return v;
+        }
     } while (path.count() > 0);
 
     return v;
