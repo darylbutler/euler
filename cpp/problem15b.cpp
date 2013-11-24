@@ -13,7 +13,7 @@ using namespace std;
 typedef unsigned long long int lint;
 
 // -- Constants
-static const int PathSize = 30;
+static const int PathSize = 04;
 
 // -- Globals
 static lint Iterations = 0;
@@ -69,7 +69,7 @@ struct Path
         // setup the indices of the 1's
         for (int x = 0; x < NumOfOnes; x++)
             ones.push_back(x);
-        // generate the finished test (All the ones are to the left)
+        // generate the finished test (All the 1's are to the right)
         lint isFinishedTest = 0;
         for (int x = 0; x < PathSize; x++) {
             // Add a zero...
@@ -78,6 +78,8 @@ struct Path
             if (x < NumOfOnes)
                 ++isFinishedTest;
         }
+
+/*
         // Start the loop
         while (isFinishedTest != bits.to_ullong()) {
             // This path is valid, so count it
@@ -92,6 +94,32 @@ struct Path
             // Increment the 1's positions
             stepOnes();
         }
+*/
+        // Store the last found bitset for fast exit
+        bitset<PathSize> lastBits(bits);
+        // Start the loop
+        while (isFinishedTest != bits.to_ullong()) {
+                        // We're iterating
+            ++Iterations;
+            // Set the 1's according to their positions in the 'ones' vector
+            bits.reset();
+            for (auto iter = ones.begin(); iter != ones.end(); ++iter) {
+                bits.set(*iter);
+            }
+            // Check if this bitset is the opposite of the last one tried.  If so, exit
+            lastBits.flip();
+            if (lastBits == bits) return count;
+            // Reset the last bit
+            lastBits = bits;
+
+            // Increment the 1's positions
+            stepOnes();
+            // This path is valid, so count it
+            // Edit: Moved this to the end, so the last bit found on fast exit isn't counted
+            count += 2; // +2 since we also found its opposite (And we have fast exit)
+
+        }
+
 
         return count;
     }
