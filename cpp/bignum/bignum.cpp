@@ -28,7 +28,7 @@
 bool BigNum::willFit(lint a, lint into) {
     // Find out how much room we have in 'into'
     // and see if a will fit into the difference.
-    return a <= (BigNum::MAX - into);
+    return a < (BigNum::MAX - into);
 }
 
 // add(lint)
@@ -50,7 +50,7 @@ void BigNum::add(lint toAdd) {
 // If the value given to subtract is larger than the actual value of this
 // instance, the value will be set to zero.
 void BigNum::subtract(lint toMinus) {
-    if (value > toMinus) {
+    if (value >= toMinus) {
         value -= toMinus;
     } else if (maxes == 0) {
         // we could see if value == toMinus, but it doesn't matter.  we
@@ -58,8 +58,8 @@ void BigNum::subtract(lint toMinus) {
         // become zero no matter what.
         value = 0;
     } else {
-        lint difference = toMinus - value;
-        value -= difference;
+        //lint difference = toMinus - value;
+        value -= toMinus + 1;
         --maxes;
     }
 }
@@ -78,8 +78,9 @@ void BigNum::multiply(lint multiple) {
     // does not overflow (so we can increment the maxes count.
     //
     // I think the easiest way to do this is with addition.
-    for (int i = 0; i < multiple; ++i) {
-        add(value); // This is some clever shit, eh?  DRY, BABY!
+    lint oldVal = value;
+    for (int i = 0; i < (multiple - 1); ++i) {
+        add(oldVal); // This is some clever shit, eh?  DRY, BABY!
     }
 }
 
@@ -108,23 +109,26 @@ void BigNum::divide(lint divisor) {
 std::string BigNum::AsString() {
     if (maxes == 0) return std::to_string(value);
 
-    std::string val = std::to_string(value),
-                max = std::to_string(BigNum::MAX);
+    const std::string   val = std::to_string(value),
+                        max = std::to_string(BigNum::MAX);
 
     std::stringstream ss;
     uint carry = 0;
 
     // Iterate for each character.  MAX will definitely always be longest.
-    for (int i = max.size() - 1; i >= 0; --i) {
+    int val_pos = val.size() - 1;
+    for (auto iter = max.rbegin(); iter != max.rend(); ++iter) {
         uint sum = 0;
 
         // -- Calculate Sum
         // If our we're adding digits our smaller value has...
-        if (i < val.size()) {
-            sum = std::stoi(val[i]);
+        //int value_pos = max.size() - i - 1;
+        if (val_pos >= 0) {
+            sum = std::stoi(val.substr(val_pos, 1));
+            --val_pos;
         }
         // All the digits in all maxes are the same, so just add it
-        sum += max[i] * maxes;
+        sum += (/*char to int*/*iter - '0') * maxes;
         // Add any carry
         sum += carry;
 
@@ -132,15 +136,24 @@ std::string BigNum::AsString() {
         carry = sum / 10;
         ss << sum % 10;
     }
-    // Add in any leftover carry
-    ss << carry;
 
     // reverse string
-    std::string flipped = ss.str();
-    ss.clear();
+    const std::string flipped = ss.str();
+    ss.str(""); // Clear the stream
 
-    for (auto iter = flipped.begin(); iter != flipped.end(); ++iter)
+    // Add in any leftover carry (Add it before the reversed number)
+    if (carry > 0)
+        ss << carry;
+
+    for (auto iter = flipped.rbegin(); iter != flipped.rend(); ++iter)
         ss << *iter;
 
     return ss.str();
+}
+
+// DEBUG
+// Dump the internal value to a string
+std::string BigNum::dump()
+{
+    return "DUMP: Maxes: " + std::to_string(maxes) + ", Value: " + std::to_string(value);
 }

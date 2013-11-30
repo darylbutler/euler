@@ -22,8 +22,8 @@ class BigNum
 public:
 
     // -- Constructors
-    BigNum(lint v)              { value = v; maxes = 0; }
-    BigNum()                    { value = maxes = 0; }
+    BigNum(lint v) :maxes(0), value(0) { add(v); }
+    BigNum()       :maxes(0), value(0) {}
     BigNum(const BigNum& other)
         :maxes(other.maxes), value(other.value) {}
     BigNum& operator=(const BigNum& rhs) {
@@ -37,6 +37,9 @@ public:
     inline void Subtract(lint x)     { subtract(x); }
     inline void Multiply(lint x)     { multiply(x); }
     inline void Divide(lint x)       { divide(x); }
+    inline void Reset()              { maxes = 0; value = 0; }
+    BigNum& operator++()             { add(1);      return *this; }
+    BigNum& operator--()             { subtract(1); return *this;}
     BigNum& operator+=(const lint x) { add(x);      return *this; }
     BigNum& operator-=(const lint x) { subtract(x); return *this; }
     BigNum& operator*=(const lint x) { multiply(x); return *this; }
@@ -49,6 +52,9 @@ public:
 
     // Get Value
     std::string AsString();
+
+    // Debug
+    std::string dump();
 };
 
 #endif
