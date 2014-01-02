@@ -1,6 +1,12 @@
 #ifndef BIGNUM_H
 #define BIGNUM_H
 
+#include <vector>
+#include <stdint.h> // Do we need this?
+#include <sstream>  // for Value output
+
+
+
 class BigNum
 {
     // -- Private types

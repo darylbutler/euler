@@ -8,18 +8,7 @@
  * Probably will never support anything up integars
  */
 
-#include <vector>
-#include <stdint.h> // Do we need this?
-#include <sstream>  // for Value output
-
-#include <iostream> // for debug only
-
 #include "bignum.h"
-
-// -- Public Functions --
-
-
-
 
 // -- Private Functions --
 

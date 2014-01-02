@@ -1,13 +1,13 @@
 
 #include <iostream>
-#include "bignum.cpp"
+#include "bignum.h"
 using namespace std;
 
 int main()
 {
     unsigned long long int x = 0;
     x = ~x;
-    BigNum num(x);
+    BigNum num(10);
     cout << num.AsString() << endl;
     cout << num.dump() << endl;
     num -= 5;
